@@ -10,82 +10,15 @@
 
 import os
 import sys
-import re
-import urllib
 
-####################################################
-# Adapted from : $TM_SUPPORT_PATH/lib/webpreview.py
-
-# fix up path
-tm_support_path = os.path.join(os.environ["TM_SUPPORT_PATH"], "lib")
-if not tm_support_path in os.environ:
-    sys.path.insert(0, tm_support_path)
-
-from tm_helpers import sh, sh_escape
-
-webpreview = sh_escape(os.path.join(
-                os.environ["TM_SUPPORT_PATH"], "lib/webpreview.sh"))
-
-
-def html_header(title, subtitle):
-    return sh('source %s; html_header "%s" "%s"' %
-              (webpreview, title, subtitle))
-
-
-def html_footer():
-    return sh('source %s; html_footer' % webpreview)
-
-#
-####################################################
 
 tm_bundle_path = os.environ['TM_BUNDLE_PATH']
-vendor = os.path.join(tm_bundle_path, 'Vendor')
-sys.path.append(vendor)
+sys.path.append(tm_bundle_path)
 
-import pep8
+from Support import textmate_pep8
 
 
-tm_file = os.environ['TM_FILEPATH']
-tm_filename = os.environ['TM_FILENAME']
-url_file = urllib.pathname2url(tm_file)
-
-import sys
-import StringIO
-SAVEOUT = sys.stdout
-capture = StringIO.StringIO()
-sys.stdout = capture
-
-pep8.process_options(['--repeat', tm_file])
-checker = pep8.Checker(tm_file)
-errors = checker.check_all()
-
-sys.stdout = SAVEOUT
-
-pat = re.compile(r'\s*:(\d+):(\d+):\s*(.*)$')
-
-print(html_header("PEP-8 Python", "Python style checker"))
-print("&lt;ul&gt;")
-
-if errors:
-    print("&lt;h2&gt;File : %s&lt;/h2&gt;" % tm_filename)
-else:
-    print("&lt;h2&gt;No error on file : %s&lt;/h2&gt;" % tm_filename)
-
-for line in capture.getvalue().splitlines():
-    print("&lt;li&gt;")
-
-    line = line[len(tm_file):]
-    (lig, col, txt) = pat.match(line).group(1, 2, 3)
-    matches = {"lig": lig, "col": col, "txt": txt}
-    print('&lt;a href="txmt://open/?url=file://%s' % url_file +
-          ('&amp;line=%(lig)s&amp;column=%(col)s"&gt;' % matches) +
-          ('line:%(lig)s col:%(col)s&lt;/a&gt; %(txt)s' % matches))
-
-    print("&lt;/li&gt;")
-
-print("&lt;/ul&gt;")
-print(html_footer())
-</string>
+textmate_pep8.main()</string>
 	<key>input</key>
 	<string>document</string>
 	<key>keyEquivalent</key>
