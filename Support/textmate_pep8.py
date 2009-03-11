@@ -6,6 +6,8 @@ textmate_pep8.py
 Created by pierre pracht on 2009-03-11.
 """
 
+from __future__ import with_statement
+
 import sys
 import getopt
 import os
@@ -190,14 +192,13 @@ def main(argv=None):
 
     # if no arguments use TextMate variables and read from stdin
     if len(args) == 0:
-        tmp_file = tempfile.NamedTemporaryFile()
-        tmp_file.write(sys.stdin.read())
-        tmp_file.flush()
-        tmp_filepath = tmp_file.name
-        txmt_filepath = os.environ['TM_FILEPATH']
-        txmt_filename = os.environ['TM_FILENAME']
-        output = txmt_pep8(tmp_filepath, txmt_filepath, txmt_filename)
-        tmp_file.close()
+        with tempfile.NamedTemporaryFile() as tmp_file:
+            tmp_file.write(sys.stdin.read())
+            tmp_file.flush()
+            tmp_filepath = tmp_file.name
+            txmt_filepath = os.environ['TM_FILEPATH']
+            txmt_filename = os.environ['TM_FILENAME']
+            output = txmt_pep8(tmp_filepath, txmt_filepath, txmt_filename)
     else:
         # TODO: process multiple files
         filepath = args[0]
