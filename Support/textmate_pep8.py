@@ -94,12 +94,15 @@ def pep8_process_output(pep8_output, filepath):
     """
     pat = re.compile(r'\s*:(\d+):(\d+):\s*(.*)$')
     output = []
-    for line in pep8_output.getvalue().splitlines():
-        line = line[len(filepath):]
-        (lig, col, txt) = pat.match(line).group(1, 2, 3)
-        output.append({"lig": lig, "col": col, "txt": txt})
-
-    return output
+    it_lines = iter(pep8_output.getvalue().splitlines())
+    while True:
+        try:
+            line = it_lines.next()
+            line = line[len(filepath):]
+            (lig, col, txt) = pat.match(line).group(1, 2, 3)
+            output.append({"lig": lig, "col": col, "txt": txt})
+        except StopIteration:
+            return output
 
 
 def capture_pep8(filepath):
