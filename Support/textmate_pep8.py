@@ -95,9 +95,9 @@ def pep8_process_output(pep8_output, filepath):
     pat = re.compile(r'\s*:(\d+):(\d+):\s*(.*)$')
     output = []
     it_lines = iter(pep8_output.getvalue().splitlines())
-    while True:
-        try:
-            line = it_lines.next()
+    try:
+        line = it_lines.next()
+        while True:
             line = line[len(filepath):]
             (lig, col, txt) = pat.match(line).group(1, 2, 3)
 
@@ -105,12 +105,22 @@ def pep8_process_output(pep8_output, filepath):
             code_python = it_lines.next()
             code_err_pos = it_lines.next()
 
-            output.append({
-                "lig": lig, "col": col, "txt": txt,
-                "code_python": code_python, "code_err_pos" :code_err_pos,
-            })
-        except StopIteration:
-            return output
+            # parse pep message
+            pep_list = []
+            # look ahead for pep message end
+            try:
+                line = it_lines.next()
+                while line == "" or line.startswith("    "):
+                    pep_list.append(line)
+                    line = it_lines.next()
+            finally:
+                output.append({
+                    "lig": lig, "col": col, "txt": txt,
+                    "code_python": code_python, "code_err_pos": code_err_pos,
+                    "pep_list": pep_list,
+                })
+    except StopIteration:
+        return output
 
 
 def capture_pep8(filepath):
@@ -123,6 +133,7 @@ def capture_pep8(filepath):
     pep8.process_options([
         '--repeat',
         '--show-source',
+        '--show-pep8',
         filepath])
     checker = pep8.Checker(filepath)
     errors = checker.check_all()
@@ -163,6 +174,14 @@ def format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename):
 
         output.append('<pre>%(code_python)s' % error)
         output.append('%(code_err_pos)s</pre>' % error)
+
+        output.append('<p>')
+        for pep_line in error["pep_list"]:
+            if len(pep_line) > 0:
+                output.append(pep_line)
+            else:
+                output.append('<br />')
+        output.append('</p>')
 
         output.append("</li>")
 
