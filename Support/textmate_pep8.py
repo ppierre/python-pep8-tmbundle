@@ -161,6 +161,9 @@ def format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename):
                       ('&line=%(lig)s&column=%(col)s">' % error) +
                       ('line:%(lig)s col:%(col)s</a> %(txt)s' % error))
 
+        output.append('<pre>%(code_python)s' % error)
+        output.append('%(code_err_pos)s</pre>' % error)
+
         output.append("</li>")
 
     output.append("</ul>")
