@@ -12,6 +12,7 @@ import os
 import re
 import urllib
 import StringIO
+import tempfile
 
 # =====================================================
 # = Adapted from : $TM_SUPPORT_PATH/lib/webpreview.py =
@@ -175,11 +176,16 @@ def main(argv=None):
         print >> sys.stderr, "\t for help use --help"
         return 2
 
-    # if no arguments use TextMate variables
+    # if no arguments use TextMate variables and read from stdin
     if len(args) == 0:
+        tmp_file = tempfile.NamedTemporaryFile()
+        tmp_file.write(sys.stdin.read())
+        tmp_file.flush()
+        tmp_filepath = tmp_file.name
         txmt_filepath = os.environ['TM_FILEPATH']
         txmt_filename = os.environ['TM_FILENAME']
-        output = txmt_pep8(txmt_filepath, txmt_filepath, txmt_filename)
+        output = txmt_pep8(tmp_filepath, txmt_filepath, txmt_filename)
+        tmp_file.close()
     else:
         # TODO: process multiple files
         filepath = args[0]
