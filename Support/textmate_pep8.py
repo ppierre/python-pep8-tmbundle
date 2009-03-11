@@ -76,11 +76,28 @@ def txmt_pep8(filepath, txmt_filepath=None, txmt_filename=None):
         txmt_filename = os.path.basename(txmt_filepath)
 
     (errors, pep8_output) = capture_pep8(filepath)
-    pep8_errors_list = pep8_output.getvalue().splitlines() if errors else []
+    pep8_errors_list = pep8_process_output(
+                        pep8_output, filepath) if errors else []
 
-    # TODO: pre-process pep8_output
-    return format_txmt_pep8(pep8_errors_list,
-                            filepath, txmt_filepath, txmt_filename)
+    return format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename)
+
+
+def pep8_process_output(pep8_output, filepath):
+    """
+    Process pep8.py output in list of error message
+
+    Args :
+        pep8_output: Capture of pep8.py output
+        filepath: path to trim from error message
+    """
+    pat = re.compile(r'\s*:(\d+):(\d+):\s*(.*)$')
+    output = []
+    for line in pep8_output.getvalue().splitlines():
+        line = line[len(filepath):]
+        (lig, col, txt) = pat.match(line).group(1, 2, 3)
+        output.append({"lig": lig, "col": col, "txt": txt})
+
+    return output
 
 
 def capture_pep8(filepath):
@@ -99,19 +116,17 @@ def capture_pep8(filepath):
     return (errors, capture)
 
 
-def format_txmt_pep8(pep8_errors_list, filepath, txmt_filepath, txmt_filename):
+def format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename):
     """
     Format pep8.py errors for TextMate Web preview
 
     Args:
-        pep8_errors_list:
-        filepath : path used for TextMate link
-        filename : displayed filename
+        pep8_errors_list: a list of structured error
+        txmt_filepath : path used for TextMate link
+        txmt_filename : displayed filename
     """
 
     url_file = urllib.pathname2url(txmt_filepath)
-
-    pat = re.compile(r'\s*:(\d+):(\d+):\s*(.*)$')
 
     output = []
 
@@ -123,15 +138,12 @@ def format_txmt_pep8(pep8_errors_list, filepath, txmt_filepath, txmt_filename):
     else:
         output.append("<h2>No error on file : %s</h2>" % txmt_filename)
 
-    for line in pep8_errors_list:
+    for error in pep8_errors_list:
         output.append("<li>")
 
-        line = line[len(filepath):]
-        (lig, col, txt) = pat.match(line).group(1, 2, 3)
-        matches = {"lig": lig, "col": col, "txt": txt}
         output.append('<a href="txmt://open/?url=file://%s' % url_file +
-                      ('&line=%(lig)s&column=%(col)s">' % matches) +
-                      ('line:%(lig)s col:%(col)s</a> %(txt)s' % matches))
+                      ('&line=%(lig)s&column=%(col)s">' % error) +
+                      ('line:%(lig)s col:%(col)s</a> %(txt)s' % error))
 
         output.append("</li>")
 
