@@ -8,6 +8,10 @@ Style Guide for Python Code
 * Use [pep8.py](http://svn.browsershots.org/trunk/devtools/pep8/pep8.py)
   * ``Copyright (C) 2006 Johann C. Rocholl <johann@browsershots.org>``
 
+* Command for formating to 4-space indents, no hard tab characters and triming excess spaces
+* Use ``reindent.py`` script from Python distribution
+  * ``public domain, by Tim Peters``
+
 Installation :
 --------------
 
