@@ -158,6 +158,25 @@ def format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename):
     output = []
 
     output.append(html_header("PEP-8 Python", "Python style checker"))
+
+    output.append("<script>")
+    txmt_pep8_js = os.path.join(os.path.dirname(__file__), "txmt_pep8.js")
+    output.append(file(txmt_pep8_js).read())
+    output.append("</script>")
+    output.append('''
+    <p style="float:right;">
+        <input type="checkbox" id="view_source" title="view source"
+            onchange="view(this);" checked="checked" />
+        <label for="view_source" title="view source">view source</label>
+        <input type="checkbox" id="view_pep" title="view PEP"
+            onchange="view(this);" checked="checked" />
+        <label for="view_pep" title="view PEP">view PEP</label>
+    </p>
+    <style>
+      blockquote.view_pep {margin-bottom:1.5em;}
+    </style>
+    ''')
+
     output.append("<ul>")
 
     if pep8_errors_list:
@@ -172,16 +191,16 @@ def format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename):
                       ('&line=%(lig)s&column=%(col)s">' % error) +
                       ('line:%(lig)s col:%(col)s</a> %(txt)s' % error))
 
-        output.append('<pre>%(code_python)s' % error)
+        output.append('<pre class="view_source">%(code_python)s' % error)
         output.append('%(code_err_pos)s</pre>' % error)
 
-        output.append('<p>')
+        output.append('<blockquote class="view_pep">')
         for pep_line in error["pep_list"]:
             if len(pep_line) > 0:
                 output.append(pep_line)
             else:
-                output.append('<br />')
-        output.append('</p>')
+                output.append('<br /><br />')
+        output.append('</blockquote>')
 
         output.append("</li>")
 
