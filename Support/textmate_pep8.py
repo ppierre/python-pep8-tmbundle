@@ -100,7 +100,15 @@ def pep8_process_output(pep8_output, filepath):
             line = it_lines.next()
             line = line[len(filepath):]
             (lig, col, txt) = pat.match(line).group(1, 2, 3)
-            output.append({"lig": lig, "col": col, "txt": txt})
+
+            # parse code output
+            code_python = it_lines.next()
+            code_err_pos = it_lines.next()
+
+            output.append({
+                "lig": lig, "col": col, "txt": txt,
+                "code_python": code_python, "code_err_pos" :code_err_pos,
+            })
         except StopIteration:
             return output
 
@@ -112,7 +120,10 @@ def capture_pep8(filepath):
     capture = StringIO.StringIO()
     sys.stdout = capture
 
-    pep8.process_options(['--repeat', filepath])
+    pep8.process_options([
+        '--repeat',
+        '--show-source',
+        filepath])
     checker = pep8.Checker(filepath)
     errors = checker.check_all()
 
