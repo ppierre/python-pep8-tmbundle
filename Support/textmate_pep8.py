@@ -66,8 +66,26 @@ from Vendor import pep8
 class TxmtChecker(pep8.Checker):
     """Intercept Checker:report_error"""
 
-    def __init__(self, filename):
-        pep8.Checker.__init__(self, filename)
+    def __init__(self, filename, lines):
+        """Override pep8.Checker.__init__
+
+         - take lines from parameters
+         - initialize self.output dict to store error
+        """
+        # pep8.Checker.__init__(self, filename)
+
+        ## Copy from pep8.Checker.__init__
+        self.filename = filename
+
+        # self.lines = file(filename).readlines()
+        # take lines from parameters
+        self.lines = lines
+
+        self.physical_checks = pep8.find_checks('physical_line')
+        self.logical_checks = pep8.find_checks('logical_line')
+        pep8.options.counters['physical lines'] = \
+            pep8.options.counters.get('physical lines', 0) + len(self.lines)
+
         self.output = []
 
     def report_error(self, line_number, offset, text, check):
@@ -127,7 +145,7 @@ def output_pep8(filepath):
         '--show-source',
         '--show-pep8',
         filepath])
-    checker = TxmtChecker(filepath)
+    checker = TxmtChecker(filepath, file(filepath).readlines())
     errors = checker.check_all()
 
     return checker.output
