@@ -72,12 +72,6 @@ class TxmtChecker(pep8.Checker):
          - take lines from parameters
         """
 
-        pep8.process_options([
-            '--repeat',
-            '--show-source',
-            '--show-pep8',
-            filename])
-
         # pep8.Checker.__init__(self, filename)
 
         ## Copy from pep8.Checker.__init__
@@ -249,6 +243,11 @@ def main(argv=None):
             filepath = os.environ.get('TM_FILEPATH', None) or args[0]
             filename = os.environ.get('TM_FILENAME',
                                         os.path.basename(filepath))
+            pep8.process_options([
+                '--repeat',
+                '--show-source',
+                '--show-pep8',
+                filename])
             with FormatTxmtPep8(filepath, filename, f_out) as html_out:
                 TxmtChecker(filepath, f_in.readlines()).report_all_on(html_out)
 
