@@ -249,8 +249,7 @@ def main(argv=None):
         print >> sys.stderr, "\t for help use --help"
         return 2
 
-    output_file = open(output_filename, 'w') if output_filename else sys.stdout
-    with output_file as out:
+    with open(output_filename, 'w') if output_filename else sys.stdout as out:
         # if no arguments use TextMate variables and read from stdin
         if len(args) == 0:
             txmt_filepath = os.environ['TM_FILEPATH']
