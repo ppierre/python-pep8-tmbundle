@@ -72,6 +72,13 @@ class TxmtChecker(pep8.Checker):
          - take lines from parameters
          - initialize self.output dict to store error
         """
+
+        pep8.process_options([
+            '--repeat',
+            '--show-source',
+            '--show-pep8',
+            filename])
+
         # pep8.Checker.__init__(self, filename)
 
         ## Copy from pep8.Checker.__init__
@@ -140,11 +147,6 @@ def txmt_pep8(filepath, out, lines=None, txmt_filename=None):
 def output_pep8(filepath, lines):
     """Capture pep8.py output"""
 
-    pep8.process_options([
-        '--repeat',
-        '--show-source',
-        '--show-pep8',
-        filepath])
     checker = TxmtChecker(filepath, lines)
     errors = checker.check_all()
 
