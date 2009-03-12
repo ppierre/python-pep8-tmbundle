@@ -89,6 +89,12 @@ class TxmtChecker(pep8.Checker):
         })
 
 
+def null_message(text):
+    """Replace pep8.py message discarding output"""
+    pass
+
+pep8.message = null_message
+
 # ======================================
 # = Format pep8.py output for TextMate =
 # ======================================
@@ -116,10 +122,6 @@ def txmt_pep8(filepath, txmt_filepath=None, txmt_filename=None):
 def output_pep8(filepath):
     """Capture pep8.py output"""
 
-    SAVEOUT = sys.stdout
-    capture = StringIO.StringIO()
-    sys.stdout = capture
-
     pep8.process_options([
         '--repeat',
         '--show-source',
@@ -127,8 +129,6 @@ def output_pep8(filepath):
         filepath])
     checker = TxmtChecker(filepath)
     errors = checker.check_all()
-
-    sys.stdout = SAVEOUT
 
     return checker.output
 
