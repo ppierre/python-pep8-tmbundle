@@ -15,6 +15,7 @@ import re
 import urllib
 import StringIO
 import tempfile
+import cgi
 
 # =====================================================
 # = Adapted from : $TM_SUPPORT_PATH/lib/webpreview.py =
@@ -75,14 +76,16 @@ class TxmtChecker(pep8.Checker):
 
         code_python = (self.lines[line_number - 1]).rstrip()
         code_python_formated = ('%s<span class=caret>%s</span>%s' %
-            (code_python[:offset],
-             code_python[offset:(offset + 1)],
-             code_python[:(offset + 1)]))
+            (cgi.escape(code_python[:offset]),
+             cgi.escape(code_python[offset:(offset + 1)]),
+             cgi.escape(code_python[(offset + 1):])))
 
+        doc = check.__doc__.lstrip('\n').rstrip()
         self.output.append({
-            "lig": line_number, "col": offset, "txt": text,
+            "lig": line_number, "col": offset,
+            "txt": cgi.escape(text),
             "code_python": code_python_formated,
-            "pep_list": check.__doc__.lstrip('\n').rstrip().splitlines(),
+            "pep_list": cgi.escape(doc).splitlines(),
         })
 
 
