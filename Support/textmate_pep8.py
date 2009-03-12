@@ -119,7 +119,7 @@ pep8.message = null_message
 # = Format pep8.py output for TextMate =
 # ======================================
 
-def txmt_pep8(filepath, lines=None, txmt_filename=None):
+def txmt_pep8(filepath, out, lines=None, txmt_filename=None):
     """
     Format pep8.py output for TextMate Web preview
 
@@ -134,7 +134,7 @@ def txmt_pep8(filepath, lines=None, txmt_filename=None):
 
     pep8_errors_list = output_pep8(filepath, lines)
 
-    return format_txmt_pep8(pep8_errors_list, filepath, txmt_filename)
+    return format_txmt_pep8(pep8_errors_list, filepath, txmt_filename, out)
 
 
 def output_pep8(filepath, lines):
@@ -151,7 +151,7 @@ def output_pep8(filepath, lines):
     return checker.output
 
 
-def format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename):
+def format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename, out):
     """
     Format pep8.py errors for TextMate Web preview
 
@@ -163,15 +163,13 @@ def format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename):
 
     url_file = urllib.pathname2url(txmt_filepath)
 
-    output = []
+    out.write(html_header("PEP-8 Python", "Python style checker"))
 
-    output.append(html_header("PEP-8 Python", "Python style checker"))
-
-    output.append("<script>")
+    out.write("<script>")
     txmt_pep8_js = os.path.join(os.path.dirname(__file__), "txmt_pep8.js")
-    output.append(file(txmt_pep8_js).read())
-    output.append("</script>")
-    output.append('''
+    out.write(file(txmt_pep8_js).read())
+    out.write("</script>")
+    out.write('''
     <p style="float:right;">
         <input type="checkbox" id="view_source" title="view source"
             onchange="view(this);" checked="checked" />
@@ -186,36 +184,34 @@ def format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename):
     </style>
     ''')
 
-    output.append("<ul>")
+    out.write("<ul>")
 
     if pep8_errors_list:
-        output.append("<h2>File : %s</h2>" % txmt_filename)
+        out.write("<h2>File : %s</h2>" % txmt_filename)
     else:
-        output.append("<h2>No error on file : %s</h2>" % txmt_filename)
+        out.write("<h2>No error on file : %s</h2>" % txmt_filename)
 
     for error in pep8_errors_list:
-        output.append("<li>")
+        out.write("<li>")
 
-        output.append('<a href="txmt://open/?url=file://%s' % url_file +
-                      ('&line=%(lig)s&column=%(col)s">' % error) +
-                      ('line:%(lig)s col:%(col)s</a> %(txt)s' % error))
+        out.write('<a href="txmt://open/?url=file://%s' % url_file +
+                 ('&line=%(lig)s&column=%(col)s">' % error) +
+                 ('line:%(lig)s col:%(col)s</a> %(txt)s' % error))
 
-        output.append('<pre class="view_source">%(code_python)s</pre>' % error)
+        out.write('<pre class="view_source">%(code_python)s</pre>' % error)
 
-        output.append('<blockquote class="view_pep">')
+        out.write('<blockquote class="view_pep">')
         for pep_line in error["pep_list"]:
             if len(pep_line) > 0:
-                output.append(pep_line)
+                out.write(pep_line)
             else:
-                output.append('<br /><br />')
-        output.append('</blockquote>')
+                out.write('<br /><br />')
+        out.write('</blockquote>')
 
-        output.append("</li>")
+        out.write("</li>")
 
-    output.append("</ul>")
-    output.append(html_footer())
-
-    return "\n".join(output)
+    out.write("</ul>")
+    out.write(html_footer())
 
 
 help_message = '''
@@ -253,22 +249,18 @@ def main(argv=None):
         print >> sys.stderr, "\t for help use --help"
         return 2
 
-    # if no arguments use TextMate variables and read from stdin
-    if len(args) == 0:
-        txmt_filepath = os.environ['TM_FILEPATH']
-        txmt_filename = os.environ['TM_FILENAME']
-        output = txmt_pep8(txmt_filepath, sys.stdin.readlines(), txmt_filename)
-    else:
-        # TODO: process multiple files
-        filepath = args[0]
-        output = txmt_pep8(filepath)
-
-    if output_filename:
-        output_file = open(output_filename, 'w')
-        output_file.write(output)
-        output_file.close()
-    else:
-        print(output)
+    output_file = open(output_filename, 'w') if output_filename else sys.stdout
+    with output_file as out:
+        # if no arguments use TextMate variables and read from stdin
+        if len(args) == 0:
+            txmt_filepath = os.environ['TM_FILEPATH']
+            txmt_filename = os.environ['TM_FILENAME']
+            output = txmt_pep8(txmt_filepath, out,
+                                sys.stdin.readlines(), txmt_filename)
+        else:
+            # TODO: process multiple files
+            filepath = args[0]
+            output = txmt_pep8(filepath, out)
 
 if __name__ == "__main__":
     sys.exit(main())
