@@ -73,10 +73,15 @@ class TxmtChecker(pep8.Checker):
         """Report error to a list of structured dict"""
         pep8.Checker.report_error(self, line_number, offset, text, check)
 
+        code_python = (self.lines[line_number - 1]).rstrip()
+        code_python_formated = ('%s<span class=caret>%s</span>%s' %
+            (code_python[:offset],
+             code_python[offset:(offset + 1)],
+             code_python[:(offset + 1)]))
+
         self.output.append({
             "lig": line_number, "col": offset, "txt": text,
-            "code_python": (self.lines[line_number - 1]).rstrip(),
-            "code_err_pos": (' ' * offset + '^'),
+            "code_python": code_python_formated,
             "pep_list": check.__doc__.lstrip('\n').rstrip().splitlines(),
         })
 
@@ -156,6 +161,7 @@ def format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename):
     </p>
     <style>
       blockquote.view_pep {margin-bottom:1.5em;}
+      .caret {background-color:rgba(255,0,0,0.4);}
     </style>
     ''')
 
@@ -173,8 +179,7 @@ def format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename):
                       ('&line=%(lig)s&column=%(col)s">' % error) +
                       ('line:%(lig)s col:%(col)s</a> %(txt)s' % error))
 
-        output.append('<pre class="view_source">%(code_python)s' % error)
-        output.append('%(code_err_pos)s</pre>' % error)
+        output.append('<pre class="view_source">%(code_python)s</pre>' % error)
 
         output.append('<blockquote class="view_pep">')
         for pep_line in error["pep_list"]:
