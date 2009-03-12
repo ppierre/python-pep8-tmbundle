@@ -139,18 +139,11 @@ def txmt_pep8(filepath, out, lines=None, txmt_filename=None):
     if not txmt_filename:
         txmt_filename = os.path.basename(filepath)
 
-    pep8_errors_list = output_pep8(filepath, lines)
-
-    return format_txmt_pep8(pep8_errors_list, filepath, txmt_filename, out)
-
-
-def output_pep8(filepath, lines):
-    """Capture pep8.py output"""
-
     checker = TxmtChecker(filepath, lines)
     errors = checker.check_all()
+    pep8_errors_list = checker.output
 
-    return checker.output
+    return format_txmt_pep8(pep8_errors_list, filepath, txmt_filename, out)
 
 
 def format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename, out):
