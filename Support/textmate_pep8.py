@@ -66,7 +66,7 @@ from Vendor import pep8
 class TxmtChecker(pep8.Checker):
     """Intercept Checker:report_error"""
 
-    def __init__(self, filename, lines):
+    def __init__(self, filename, lines=None):
         """Override pep8.Checker.__init__
 
          - take lines from parameters
@@ -77,9 +77,11 @@ class TxmtChecker(pep8.Checker):
         ## Copy from pep8.Checker.__init__
         self.filename = filename
 
-        # self.lines = file(filename).readlines()
-        # take lines from parameters
-        self.lines = lines
+        if not lines:
+            self.lines = file(filename).readlines()
+        else:
+            # take lines from parameters
+            self.lines = lines
 
         self.physical_checks = pep8.find_checks('physical_line')
         self.logical_checks = pep8.find_checks('logical_line')
@@ -117,7 +119,7 @@ pep8.message = null_message
 # = Format pep8.py output for TextMate =
 # ======================================
 
-def txmt_pep8(filepath, txmt_filepath=None, txmt_filename=None):
+def txmt_pep8(filepath, lines=None, txmt_filename=None):
     """
     Format pep8.py output for TextMate Web preview
 
@@ -127,17 +129,15 @@ def txmt_pep8(filepath, txmt_filepath=None, txmt_filename=None):
         txmt_filename : displayed filename
     """
 
-    if not txmt_filepath:
-        txmt_filepath = filepath
     if not txmt_filename:
-        txmt_filename = os.path.basename(txmt_filepath)
+        txmt_filename = os.path.basename(filepath)
 
-    pep8_errors_list = output_pep8(filepath)
+    pep8_errors_list = output_pep8(filepath, lines)
 
-    return format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename)
+    return format_txmt_pep8(pep8_errors_list, filepath, txmt_filename)
 
 
-def output_pep8(filepath):
+def output_pep8(filepath, lines):
     """Capture pep8.py output"""
 
     pep8.process_options([
@@ -145,7 +145,7 @@ def output_pep8(filepath):
         '--show-source',
         '--show-pep8',
         filepath])
-    checker = TxmtChecker(filepath, file(filepath).readlines())
+    checker = TxmtChecker(filepath, lines)
     errors = checker.check_all()
 
     return checker.output
@@ -261,7 +261,7 @@ def main(argv=None):
             tmp_filepath = tmp_file.name
             txmt_filepath = os.environ['TM_FILEPATH']
             txmt_filename = os.environ['TM_FILENAME']
-            output = txmt_pep8(tmp_filepath, txmt_filepath, txmt_filename)
+            output = txmt_pep8(txmt_filepath, file(tmp_filepath).readlines(), txmt_filename)
     else:
         # TODO: process multiple files
         filepath = args[0]
