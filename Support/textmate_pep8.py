@@ -70,7 +70,6 @@ class TxmtChecker(pep8.Checker):
         """Override pep8.Checker.__init__
 
          - take lines from parameters
-         - initialize self.output dict to store error
         """
 
         pep8.process_options([
@@ -95,10 +94,13 @@ class TxmtChecker(pep8.Checker):
         pep8.options.counters['physical lines'] = \
             pep8.options.counters.get('physical lines', 0) + len(self.lines)
 
-        self.output = []
+    def report_all_on(self, html_out):
+        """Fix html_out and launch check_all"""
+        self.html_out = html_out
+        self.check_all()
 
     def report_error(self, line_number, offset, text, check):
-        """Report error to a list of structured dict"""
+        """Report error to html_out function"""
         pep8.Checker.report_error(self, line_number, offset, text, check)
 
         code_python = (self.lines[line_number - 1]).rstrip()
@@ -108,7 +110,7 @@ class TxmtChecker(pep8.Checker):
              cgi.escape(code_python[(offset + 1):])))
 
         doc = check.__doc__.lstrip('\n').rstrip()
-        self.output.append({
+        self.html_out({
             "lig": line_number, "col": offset,
             "txt": cgi.escape(text),
             "code_python": code_python_formated,
@@ -126,87 +128,85 @@ pep8.message = null_message
 # = Format pep8.py output for TextMate =
 # ======================================
 
-def txmt_pep8(filepath, out, lines=None, txmt_filename=None):
+class FormatTxmtPep8(object):
     """
-    Format pep8.py output for TextMate Web preview
+    Build HTML output for TextMate preview.
 
-    Args :
-        filepath: path where to read file
-        txmt_filepath : path used for TextMate link
-        txmt_filename : displayed filename
+    Take : file descriptor for output
+    Give : method render each errorBuild HTML output for TextMate preview.
     """
 
-    if not txmt_filename:
-        txmt_filename = os.path.basename(filepath)
+    def __init__(self, txmt_filepath, txmt_filename, out):
 
-    checker = TxmtChecker(filepath, lines)
-    errors = checker.check_all()
-    pep8_errors_list = checker.output
+        self.txmt_filepath = txmt_filepath
+        self.txmt_filename = txmt_filename
+        self.out = out
 
-    return format_txmt_pep8(pep8_errors_list, filepath, txmt_filename, out)
+        self.url_file = urllib.pathname2url(txmt_filepath)
+        self.error = False
 
+    def _write(self, msg):
+        """Write on out file descriptor"""
+        self.out.write(msg)
 
-def format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename, out):
-    """
-    Format pep8.py errors for TextMate Web preview
+    def __enter__(self):
+        """Build header of HTML page"""
 
-    Args:
-        pep8_errors_list: a list of structured error
-        txmt_filepath : path used for TextMate link
-        txmt_filename : displayed filename
-    """
+        self._write(html_header("PEP-8 Python", "Python style checker"))
 
-    url_file = urllib.pathname2url(txmt_filepath)
+        self._write("<script>")
+        txmt_pep8_js = os.path.join(os.path.dirname(__file__), "txmt_pep8.js")
+        self._write(file(txmt_pep8_js).read())
+        self._write("</script>")
+        self._write('''
+        <p style="float:right;">
+            <input type="checkbox" id="view_source" title="view source"
+                onchange="view(this);" checked="checked" />
+            <label for="view_source" title="view source">view source</label>
+            <input type="checkbox" id="view_pep" title="view PEP"
+                onchange="view(this);" checked="checked" />
+            <label for="view_pep" title="view PEP">view PEP</label>
+        </p>
+        <style>
+          blockquote.view_pep {margin-bottom:1.5em;}
+          .caret {background-color:rgba(255,0,0,0.4);}
+        </style>
+        ''')
 
-    out.write(html_header("PEP-8 Python", "Python style checker"))
+        self._write("<h2>File : %s</h2>" % self.txmt_filename)
 
-    out.write("<script>")
-    txmt_pep8_js = os.path.join(os.path.dirname(__file__), "txmt_pep8.js")
-    out.write(file(txmt_pep8_js).read())
-    out.write("</script>")
-    out.write('''
-    <p style="float:right;">
-        <input type="checkbox" id="view_source" title="view source"
-            onchange="view(this);" checked="checked" />
-        <label for="view_source" title="view source">view source</label>
-        <input type="checkbox" id="view_pep" title="view PEP"
-            onchange="view(this);" checked="checked" />
-        <label for="view_pep" title="view PEP">view PEP</label>
-    </p>
-    <style>
-      blockquote.view_pep {margin-bottom:1.5em;}
-      .caret {background-color:rgba(255,0,0,0.4);}
-    </style>
-    ''')
+        self._write("<ul>")
 
-    out.write("<ul>")
+        return self.__call__
 
-    if pep8_errors_list:
-        out.write("<h2>File : %s</h2>" % txmt_filename)
-    else:
-        out.write("<h2>No error on file : %s</h2>" % txmt_filename)
+    def __call__(self, error):
+        """Render an error"""
+        self.error = True
 
-    for error in pep8_errors_list:
-        out.write("<li>")
+        self._write("<li>")
 
-        out.write('<a href="txmt://open/?url=file://%s' % url_file +
+        self._write('<a href="txmt://open/?url=file://%s' % self.url_file +
                  ('&line=%(lig)s&column=%(col)s">' % error) +
                  ('line:%(lig)s col:%(col)s</a> %(txt)s' % error))
 
-        out.write('<pre class="view_source">%(code_python)s</pre>' % error)
+        self._write('<pre class="view_source">%(code_python)s</pre>' % error)
 
-        out.write('<blockquote class="view_pep">')
+        self._write('<blockquote class="view_pep">')
         for pep_line in error["pep_list"]:
             if len(pep_line) > 0:
-                out.write(pep_line)
+                self._write(pep_line)
             else:
-                out.write('<br /><br />')
-        out.write('</blockquote>')
+                self._write('<br /><br />')
+        self._write('</blockquote>')
 
-        out.write("</li>")
+        self._write("</li>")
 
-    out.write("</ul>")
-    out.write(html_footer())
+    def __exit__(self, type, value, traceback):
+        """Build footer of HTML page"""
+        self._write("</ul>")
+        if not self.error:
+            self._write('<h2 class="alternate">No error</h2>')
+        self._write(html_footer())
 
 
 help_message = '''
@@ -224,7 +224,7 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
 
-    output_filename = None
+    output_name = None
 
     try:
         try:
@@ -237,24 +237,21 @@ def main(argv=None):
             if option in ("-h", "--help"):
                 raise Usage(help_message)
             if option in ("-o", "--output"):
-                output_filename = value
+                output_name = value
 
     except Usage, err:
         print >> sys.stderr, sys.argv[0].split("/")[-1] + ": " + str(err.msg)
         print >> sys.stderr, "\t for help use --help"
         return 2
 
-    with open(output_filename, 'w') if output_filename else sys.stdout as out:
-        # if no arguments use TextMate variables and read from stdin
-        if len(args) == 0:
-            txmt_filepath = os.environ['TM_FILEPATH']
-            txmt_filename = os.environ['TM_FILENAME']
-            output = txmt_pep8(txmt_filepath, out,
-                                sys.stdin.readlines(), txmt_filename)
-        else:
-            # TODO: process multiple files
-            filepath = args[0]
-            output = txmt_pep8(filepath, out)
+    with open(output_name, 'w') if output_name else sys.stdout as f_out:
+        with open(args[0]) if args else sys.stdin as f_in:
+            filepath = os.environ.get('TM_FILEPATH', None) or args[0]
+            filename = os.environ.get('TM_FILENAME',
+                                        os.path.basename(filepath))
+            with FormatTxmtPep8(filepath, filename, f_out) as html_out:
+                TxmtChecker(filepath, f_in.readlines()).report_all_on(html_out)
+
 
 if __name__ == "__main__":
     sys.exit(main())
