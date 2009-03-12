@@ -58,6 +58,29 @@ sys.path.append(tm_bundle_path)
 
 from Vendor import pep8
 
+# ==============================================
+# = Checker sub-class : Intercept report_error =
+# ==============================================
+
+class TxmtChecker(pep8.Checker):
+    """Intercept Checker:report_error"""
+
+    def __init__(self, filename):
+        pep8.Checker.__init__(self, filename)
+        self.output = []
+
+    def report_error(self, line_number, offset, text, check):
+        """Report error to a list of structured dict"""
+        pep8.Checker.report_error(self, line_number, offset, text, check)
+
+        self.output.append({
+            "lig": line_number, "col": offset, "txt": text,
+            "code_python": (self.lines[line_number - 1]).rstrip(),
+            "code_err_pos": (' ' * offset + '^'),
+            "pep_list": check.__doc__.lstrip('\n').rstrip().splitlines(),
+        })
+
+
 # ======================================
 # = Format pep8.py output for TextMate =
 # ======================================
@@ -77,53 +100,12 @@ def txmt_pep8(filepath, txmt_filepath=None, txmt_filename=None):
     if not txmt_filename:
         txmt_filename = os.path.basename(txmt_filepath)
 
-    (errors, pep8_output) = capture_pep8(filepath)
-    pep8_errors_list = pep8_process_output(
-                        pep8_output, filepath) if errors else []
+    pep8_errors_list = output_pep8(filepath)
 
     return format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename)
 
 
-def pep8_process_output(pep8_output, filepath):
-    """
-    Process pep8.py output in list of error message
-
-    Args :
-        pep8_output: Capture of pep8.py output
-        filepath: path to trim from error message
-    """
-    pat = re.compile(r'\s*:(\d+):(\d+):\s*(.*)$')
-    output = []
-    it_lines = iter(pep8_output.getvalue().splitlines())
-    try:
-        line = it_lines.next()
-        while True:
-            line = line[len(filepath):]
-            (lig, col, txt) = pat.match(line).group(1, 2, 3)
-
-            # parse code output
-            code_python = it_lines.next()
-            code_err_pos = it_lines.next()
-
-            # parse pep message
-            pep_list = []
-            # look ahead for pep message end
-            try:
-                line = it_lines.next()
-                while line == "" or line.startswith("    "):
-                    pep_list.append(line)
-                    line = it_lines.next()
-            finally:
-                output.append({
-                    "lig": lig, "col": col, "txt": txt,
-                    "code_python": code_python, "code_err_pos": code_err_pos,
-                    "pep_list": pep_list,
-                })
-    except StopIteration:
-        return output
-
-
-def capture_pep8(filepath):
+def output_pep8(filepath):
     """Capture pep8.py output"""
 
     SAVEOUT = sys.stdout
@@ -135,12 +117,12 @@ def capture_pep8(filepath):
         '--show-source',
         '--show-pep8',
         filepath])
-    checker = pep8.Checker(filepath)
+    checker = TxmtChecker(filepath)
     errors = checker.check_all()
 
     sys.stdout = SAVEOUT
 
-    return (errors, capture)
+    return checker.output
 
 
 def format_txmt_pep8(pep8_errors_list, txmt_filepath, txmt_filename):
