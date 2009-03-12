@@ -255,13 +255,9 @@ def main(argv=None):
 
     # if no arguments use TextMate variables and read from stdin
     if len(args) == 0:
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            tmp_file.write(sys.stdin.read())
-            tmp_file.flush()
-            tmp_filepath = tmp_file.name
-            txmt_filepath = os.environ['TM_FILEPATH']
-            txmt_filename = os.environ['TM_FILENAME']
-            output = txmt_pep8(txmt_filepath, file(tmp_filepath).readlines(), txmt_filename)
+        txmt_filepath = os.environ['TM_FILEPATH']
+        txmt_filename = os.environ['TM_FILENAME']
+        output = txmt_pep8(txmt_filepath, sys.stdin.readlines(), txmt_filename)
     else:
         # TODO: process multiple files
         filepath = args[0]
