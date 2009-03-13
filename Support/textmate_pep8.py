@@ -41,10 +41,6 @@ webpreview_sh = ('export TM_SUPPORT_PATH="%s"; source %s; ' %
 def html_header(title, subtitle):
     return sh(webpreview_sh + 'html_header "%s" "%s"' % (title, subtitle))
 
-
-def html_footer():
-    return sh(webpreview_sh + 'html_footer')
-
 # =======================
 # = Fix Bundle sys.path =
 # =======================
@@ -178,7 +174,10 @@ class FormatTxmtPep8(object):
             <div class="alternate">
                 ${alternate}
             </div>
-        ''' + html_footer())
+        </div>
+        </body>
+        </html>
+        ''')
 
     def __init__(self, txmt_filepath, txmt_filename, out):
 
