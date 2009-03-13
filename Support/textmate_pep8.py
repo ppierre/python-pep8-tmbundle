@@ -16,6 +16,7 @@ import urllib
 import StringIO
 import tempfile
 import cgi
+import string
 
 # =====================================================
 # = Adapted from : $TM_SUPPORT_PATH/lib/webpreview.py =
@@ -130,29 +131,12 @@ class FormatTxmtPep8(object):
     Give : method render each errorBuild HTML output for TextMate preview.
     """
 
-    def __init__(self, txmt_filepath, txmt_filename, out):
-
-        self.txmt_filepath = txmt_filepath
-        self.txmt_filename = txmt_filename
-        self.out = out
-
-        self.url_file = urllib.pathname2url(txmt_filepath)
-        self.error = False
-
-    def _write(self, msg):
-        """Write on out file descriptor"""
-        self.out.write(msg)
-
-    def __enter__(self):
-        """Build header of HTML page"""
-
-        self._write(html_header("PEP-8 Python", "Python style checker"))
-
-        self._write("<script>")
-        txmt_pep8_js = os.path.join(os.path.dirname(__file__), "txmt_pep8.js")
-        self._write(file(txmt_pep8_js).read())
-        self._write("</script>")
-        self._write('''
+    header_tpl = string.Template(
+        html_header("PEP-8 Python", "Python style checker") +
+        "<script>" +
+        file(os.path.join(os.path.dirname(__file__), "txmt_pep8.js")).read() +
+        '''
+        </script>
         <p style="float:right;">
             <input type="checkbox" id="view_source" title="view source"
                 onchange="view(this);" checked="checked" />
@@ -165,11 +149,43 @@ class FormatTxmtPep8(object):
           blockquote.view_pep {margin-bottom:1.5em;}
           .caret {background-color:rgba(255,0,0,0.4);}
         </style>
+        <h2>File : ${txmt_filename}</h2>
+            <ul>
         ''')
 
-        self._write("<h2>File : %s</h2>" % self.txmt_filename)
+    error_tpl = string.Template('''
+<li>
+    <a href="txmt://open/?url=file://${url_file}&line=${lig}&column=${col}">
+                line:${lig} col:${col}</a>
+    <pre class="view_source">${code_python}</pre>
+    <blockquote class="view_pep">
+        ${pep_html}
+    </blockquote>
+</li>
+        ''')
 
-        self._write("<ul>")
+    footer_tpl = string.Template('''
+        </ul>
+        ${alternate}
+        ''' + html_footer())
+
+    def __init__(self, txmt_filepath, txmt_filename, out):
+
+        self.txmt_filepath = txmt_filepath
+        self.txmt_filename = txmt_filename
+        self.out = out
+
+        self.url_file = urllib.pathname2url(txmt_filepath)
+        self.error = False
+
+    def _write(self, tpl, values):
+        """Write on out file descriptor"""
+        self.out.write(tpl.substitute(values))
+
+    def __enter__(self):
+        """Build header of HTML page"""
+
+        self._write(self.header_tpl, {"txmt_filename": self.txmt_filename})
 
         return self.__call__
 
@@ -177,30 +193,17 @@ class FormatTxmtPep8(object):
         """Render an error"""
         self.error = True
 
-        self._write("<li>")
-
-        self._write('<a href="txmt://open/?url=file://%s' % self.url_file +
-                 ('&line=%(lig)s&column=%(col)s">' % error) +
-                 ('line:%(lig)s col:%(col)s</a> %(txt)s' % error))
-
-        self._write('<pre class="view_source">%(code_python)s</pre>' % error)
-
-        self._write('<blockquote class="view_pep">')
-        for pep_line in error["pep_list"]:
-            if len(pep_line) > 0:
-                self._write(pep_line)
-            else:
-                self._write('<br /><br />')
-        self._write('</blockquote>')
-
-        self._write("</li>")
+        self._write(self.error_tpl, dict(error,
+            url_file=self.url_file,
+            pep_html=[line if len(line) > 0 else '<br /><br />'
+                        for line in error["pep_list"]]))
 
     def __exit__(self, type, value, traceback):
         """Build footer of HTML page"""
-        self._write("</ul>")
-        if not self.error:
-            self._write('<h2 class="alternate">No error</h2>')
-        self._write(html_footer())
+        self._write(self.footer_tpl, {
+        "alternate": '<h2 class="alternate">No error</h2>'
+                        if not self.error else '',
+        })
 
 
 help_message = '''
