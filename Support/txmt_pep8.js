@@ -55,3 +55,18 @@ window.onload = function () {
   load_from_cookie('view_pep');
   save_cookie();
 };
+
+function write_style_for(name) {
+  document.write("\n." + name + "{ display:");
+  if (read_cookie(name)) {
+    document.write("block;}");
+  } else {
+    document.write("none;}");
+  }
+}
+
+// add styles to hide/show block before adding them
+document.write("<style>");
+write_style_for('view_source');
+write_style_for('view_pep');
+document.write("</style>");
