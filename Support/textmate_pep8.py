@@ -212,7 +212,7 @@ class FormatTxmtPep8(object):
         """Build footer of HTML page"""
         if self.error:
             alternate = '<ul>%s</ul>' % "\n".join([
-                        "<li><code><b>%7d</b> </code> \
+                        "<li><code><b>%4d</b>    </code> \
                         <code><i>%s</i></code> : %s</li>" %
                         (pep8.options.counters[key], key,
                             cgi.escape(pep8.options.messages[key]))
