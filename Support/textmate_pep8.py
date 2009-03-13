@@ -139,13 +139,14 @@ class FormatTxmtPep8(object):
         </script>
         <p style="float:right;">
             <input type="checkbox" id="view_source" title="view source"
-                onchange="view(this);" checked="checked" />
-            <label for="view_source" title="view source">view source</label>
+                onchange="view(this);" checked="checked" /><label
+             for="view_source" title="view source"> view source</label>
             <input type="checkbox" id="view_pep" title="view PEP"
-                onchange="view(this);" checked="checked" />
-            <label for="view_pep" title="view PEP">view PEP</label>
+                onchange="view(this);" checked="checked" /><label
+             for="view_pep" title="view PEP"> view PEP</label>
         </p>
         <style>
+          input {margin-right:0;}
           blockquote.view_pep {margin-bottom:1.5em;}
           .caret {background-color:rgba(255,0,0,0.4);}
         </style>
