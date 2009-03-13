@@ -31,15 +31,29 @@ if not tm_support_lib_path in os.environ:
 
 from tm_helpers import sh, sh_escape
 
-webpreview = sh_escape(os.path.join(
-               tm_support_path, "lib/webpreview.sh"))
-
-webpreview_sh = ('export TM_SUPPORT_PATH="%s"; source %s; ' %
-                    (tm_support_path, webpreview))
+tm_ruby = os.environ.get("TM_RUBY", "ruby")
 
 
-def html_header(title, subtitle):
-    return sh(webpreview_sh + 'html_header "%s" "%s"' % (title, subtitle))
+def html_header(page_title, sub_title, window_title=None):
+    if not window_title:
+        window_title = page_title
+    sys.stdout.flush()
+    return sh("""
+    export TM_SUPPORT_PATH="%(tm_support_path)s"
+    "%(tm_ruby)s" -r"%(tm_support_path)s/lib/web_preview.rb" <<-'RUBY'
+    puts html_head(
+        :window_title   => "%(window_title)s",
+        :page_title     => "%(page_title)s",
+        :sub_title      => "%(sub_title)s"
+    )
+RUBY
+    """ % {
+        "tm_ruby": tm_ruby,
+        "tm_support_path": tm_support_path,
+        "window_title": window_title,
+        "page_title": page_title,
+        "sub_title": sub_title,
+    })
 
 # =======================
 # = Fix Bundle sys.path =
