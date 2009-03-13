@@ -156,15 +156,6 @@ class FormatTxmtPep8(object):
                 onchange="view(this);" checked="checked" /><label
              for="view_pep" title="view PEP"> view PEP</label>
         </p>
-        <style>
-          input {margin-right:0;}
-          ul {list-style-type:none; padding:0;}
-          li {line-height:1.2em;}
-          pre {padding:5px 5px 5px 10px;margin:0.25em 0;}
-          a {text-decoration:none;}
-          blockquote.view_pep {margin-bottom:1.5em;}
-          .caret {background-color:rgba(255,0,0,0.4);}
-        </style>
         <h2>File : ${txmt_filename}</h2>
             <ul>
         ''')
