@@ -149,6 +149,7 @@ class FormatTxmtPep8(object):
         <style>
           input {margin-right:0;}
           ul {list-style-type:none; padding:0;}
+          li {line-height:1.2em;}
           a {text-decoration:none;}
           blockquote.view_pep {margin-bottom:1.5em;}
           .caret {background-color:rgba(255,0,0,0.4);}
