@@ -153,20 +153,22 @@ class FormatTxmtPep8(object):
             <ul>
         ''')
 
-    error_tpl = string.Template('''
-<li>
-    <a href="txmt://open/?url=file://${url_file}&line=${lig}&column=${col}">
-                line:${lig} col:${col}</a>
-    <pre class="view_source">${code_python}</pre>
-    <blockquote class="view_pep">
-        ${pep_html}
-    </blockquote>
-</li>
+    error_tpl = string.Template(
+            '<li>\
+                <a href="txmt://open/?url=file://${url_file}\
+&line=${lig}&column=${col}">' +
+        '''
+                            line:${lig} col:${col}</a>
+                <pre class="view_source">${code_python}</pre>
+                <blockquote class="view_pep">
+                    ${pep_html}
+                </blockquote>
+            </li>
         ''')
 
     footer_tpl = string.Template('''
-        </ul>
-        ${alternate}
+            </ul>
+            ${alternate}
         ''' + html_footer())
 
     def __init__(self, txmt_filepath, txmt_filename, out):
