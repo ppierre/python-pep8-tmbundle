@@ -34,16 +34,20 @@ function view(el) {
   save_cookie('view_pep');
 }
 
-function load_from_cookie(name) {
-  console.log(document.cookie);
+function read_cookie(name) {
   var cookie = document.cookie;
   if (cookie && cookie.length > (name.length + 2)) {
     var i_code = cookie.indexOf(name + '=');
     var view_source = parseInt(cookie.substring(
               i_code + name.length + 1, i_code + name.length + 2), 10);
-    toggle(name, view_source);
-    document.getElementById(name).checked = view_source;
+    return view_source;
   }
+}
+
+function load_from_cookie(name) {
+  var view_source = read_cookie(name);
+  toggle(name, view_source);
+  document.getElementById(name).checked = view_source;
 }
 
 window.onload = function () {
