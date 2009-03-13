@@ -158,7 +158,7 @@ class FormatTxmtPep8(object):
                 <a href="txmt://open/?url=file://${url_file}\
 &line=${lig}&column=${col}">' +
         '''
-                            line:${lig} col:${col}</a>
+                            line:${lig} col:${col}</a> : ${txt}
                 <pre class="view_source">${code_python}</pre>
                 <blockquote class="view_pep">
                     ${pep_html}
