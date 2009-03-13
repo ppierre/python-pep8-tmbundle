@@ -53,7 +53,8 @@ function load_from_cookie(name) {
 window.onload = function () {
   load_from_cookie('view_source');
   load_from_cookie('view_pep');
-  save_cookie();
+  save_cookie('view_source');
+  save_cookie('view_pep');
 };
 
 function write_style_for(name) {
