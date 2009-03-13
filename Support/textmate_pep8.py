@@ -162,7 +162,7 @@ class FormatTxmtPep8(object):
                 <code><a href="txmt://open/?url=file://${url_file}\
 &line=${lig}&column=${col}">${position}</a></code>' +
         '''
-                   <i>${txt_code}</i> : ${txt_msg}
+                   <code><i>${txt_code}</i></code> : ${txt_msg}
                 <pre class="view_source">${code_python}</pre>
                 <blockquote class="view_pep">
                     ${pep_html}
@@ -212,7 +212,8 @@ class FormatTxmtPep8(object):
         """Build footer of HTML page"""
         if self.error:
             alternate = '<ul>%s</ul>' % "\n".join([
-                        "<li><code><b>%7d</b> </code> <i>%s</i> : %s</li>" %
+                        "<li><code><b>%7d</b> </code> \
+                        <code><i>%s</i></code> : %s</li>" %
                         (pep8.options.counters[key], key,
                             cgi.escape(pep8.options.messages[key]))
                         for key in sorted(pep8.options.messages.keys())])
