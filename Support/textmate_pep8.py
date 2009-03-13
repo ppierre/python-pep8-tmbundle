@@ -107,7 +107,8 @@ class TxmtChecker(pep8.Checker):
         doc = check.__doc__.lstrip('\n').rstrip()
         self.html_out({
             "lig": line_number, "col": offset,
-            "txt": cgi.escape(text),
+            "txt_code": cgi.escape(text[:4]),
+            "txt_msg": cgi.escape(text[5:]),
             "code_python": code_python_formated,
             "pep_list": cgi.escape(doc).splitlines(),
         })
@@ -147,6 +148,8 @@ class FormatTxmtPep8(object):
         </p>
         <style>
           input {margin-right:0;}
+          ul {list-style-type:none; padding:0;}
+          a {text-decoration:none;}
           blockquote.view_pep {margin-bottom:1.5em;}
           .caret {background-color:rgba(255,0,0,0.4);}
         </style>
@@ -156,10 +159,10 @@ class FormatTxmtPep8(object):
 
     error_tpl = string.Template(
             '<li>\
-                <a href="txmt://open/?url=file://${url_file}\
-&line=${lig}&column=${col}">' +
+                <code><a href="txmt://open/?url=file://${url_file}\
+&line=${lig}&column=${col}">${position}</a></code>' +
         '''
-                            line:${lig} col:${col}</a> : ${txt}
+                   <i>${txt_code}</i> : ${txt_msg}
                 <pre class="view_source">${code_python}</pre>
                 <blockquote class="view_pep">
                     ${pep_html}
@@ -169,7 +172,10 @@ class FormatTxmtPep8(object):
 
     footer_tpl = string.Template('''
             </ul>
-            ${alternate}
+            <p>&nbsp;</p>
+            <div class="alternate">
+                ${alternate}
+            </div>
         ''' + html_footer())
 
     def __init__(self, txmt_filepath, txmt_filename, out):
@@ -198,14 +204,22 @@ class FormatTxmtPep8(object):
 
         self._write(self.error_tpl, dict(error,
             url_file=self.url_file,
+            position="<b>%4d</b>:%-3d" % (error["lig"], error["col"]),
             pep_html=[line if len(line) > 0 else '<br /><br />'
                         for line in error["pep_list"]]))
 
     def __exit__(self, type, value, traceback):
         """Build footer of HTML page"""
+        if self.error:
+            alternate = '<ul>%s</ul>' % "\n".join([
+                        "<li><code><b>%7d</b> </code> <i>%s</i> : %s</li>" %
+                        (pep8.options.counters[key], key,
+                            cgi.escape(pep8.options.messages[key]))
+                        for key in sorted(pep8.options.messages.keys())])
+        else:
+            alternate = '<h2>No error</h2>'
         self._write(self.footer_tpl, {
-        "alternate": '<h2 class="alternate">No error</h2>'
-                        if not self.error else '',
+        "alternate": alternate,
         })
 
 
