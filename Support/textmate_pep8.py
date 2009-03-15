@@ -222,7 +222,7 @@ class FormatTxmtPep8(object):
                         <code><i>%s</i></code> : %s</li>" %
                         (pep8.options.counters[key], key,
                             cgi.escape(pep8.options.messages[key]))
-                        for key in sorted(pep8.options.messages.keys()))
+                        for key in sorted(pep8.options.messages))
         else:
             alternate = '<h2>No error</h2>'
         self._write(self.footer_tpl, {
