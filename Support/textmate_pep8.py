@@ -186,6 +186,18 @@ class FormatTxmtPep8(object):
         </html>
         ''')
 
+    def _statistics_iter(self, iter):
+        yield "<ul>"
+        for key in iter:
+            yield """
+            <li>
+                <code><b>%4d</b>    </code>
+                <code><i>%s</i></code>
+                : %s
+            </li>
+            """ % key
+        yield "</ul>"
+
     def __init__(self, txmt_filepath, txmt_filename, out):
 
         self.txmt_filepath = txmt_filepath
@@ -221,21 +233,14 @@ class FormatTxmtPep8(object):
     def __exit__(self, type, value, traceback):
         """Build footer of HTML page"""
         if self.error:
-            statistics_tpl = """
-            <li>
-                <code><b>%4d</b>    </code>
-                <code><i>%s</i></code>
-                : %s
-            </li>
-            """
-            key_list = (statistics_tpl % (
+            alternate = "\n".join(self._statistics_iter(
+                            (
                                 pep8.options.counters[key],
                                 cgi.escape(key),
                                 cgi.escape(pep8.options.messages[key]),
-                                )
+                            )
                             for key in sorted(pep8.options.messages)
-                        )
-            alternate = '<ul>%s</ul>' % "\n".join(key_list)
+                        ))
         else:
             alternate = '<h2>No error</h2>'
         self._write(self.footer_tpl, {
