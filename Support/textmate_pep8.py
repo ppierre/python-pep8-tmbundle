@@ -221,12 +221,21 @@ class FormatTxmtPep8(object):
     def __exit__(self, type, value, traceback):
         """Build footer of HTML page"""
         if self.error:
-            alternate = '<ul>%s</ul>' % "\n".join(
-                        "<li><code><b>%4d</b>    </code> \
-                        <code><i>%s</i></code> : %s</li>" %
-                        (pep8.options.counters[key], cgi.escape(key),
-                            cgi.escape(pep8.options.messages[key]))
-                        for key in sorted(pep8.options.messages))
+            statistics_tpl = """
+            <li>
+                <code><b>%4d</b>    </code>
+                <code><i>%s</i></code>
+                : %s
+            </li>
+            """
+            key_list = (statistics_tpl % (
+                                pep8.options.counters[key],
+                                cgi.escape(key),
+                                cgi.escape(pep8.options.messages[key]),
+                                )
+                            for key in sorted(pep8.options.messages)
+                        )
+            alternate = '<ul>%s</ul>' % "\n".join(key_list)
         else:
             alternate = '<h2>No error</h2>'
         self._write(self.footer_tpl, {
