@@ -142,11 +142,10 @@ class FormatTxmtPep8(object):
     Give : method render each errorBuild HTML output for TextMate preview.
     """
 
-    header_tpl = string.Template(
-        html_header("PEP-8 Python", "Python style checker") +
-        "<script>" +
-        file(os.path.join(os.path.dirname(__file__), "txmt_pep8.js")).read() +
-        '''
+    header_tpl = string.Template('''
+    %(html_header)s
+        <script src="file://%(script_src)s"
+            type="text/javascript" charset="utf-8">
         </script>
         <p style="float:right;">
             <input type="checkbox" id="view_source" title="view source"
@@ -158,7 +157,11 @@ class FormatTxmtPep8(object):
         </p>
         <h2>File : ${txmt_filename}</h2>
             <ul>
-        ''')
+        ''' % {
+            "html_header": html_header("PEP-8 Python", "Python style checker"),
+            "script_src": urllib.pathname2url(os.path.join(
+                                os.path.dirname(__file__), "txmt_pep8.js")),
+        })
 
     error_tpl = string.Template('''
             <li>
