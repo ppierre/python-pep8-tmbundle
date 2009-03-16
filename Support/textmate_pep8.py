@@ -160,11 +160,10 @@ class FormatTxmtPep8(object):
             <ul>
         ''')
 
-    error_tpl = string.Template(
-            '<li>\
+    error_tpl = string.Template('''
+            <li>
                 <code><a href="txmt://open/?url=file://${url_file}\
-&line=${lig}&column=${col}">${position}</a></code>' +
-        '''
+&line=${lig}&column=${col}">${position}</a></code>
                    <code><i>${txt_code}</i></code> : ${txt_msg}
                 <pre class="view_source">${code_python}</pre>
                 <blockquote class="view_pep">
