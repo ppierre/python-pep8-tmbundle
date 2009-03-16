@@ -202,7 +202,9 @@ class FormatTxmtPep8(object):
     def __enter__(self):
         """Build header of HTML page"""
 
-        self._write(self.header_tpl, {"txmt_filename": self.txmt_filename})
+        self._write(self.header_tpl, {
+            "txmt_filename": cgi.escape(self.txmt_filename),
+        })
 
         return self.__call__
 
@@ -222,7 +224,7 @@ class FormatTxmtPep8(object):
             alternate = '<ul>%s</ul>' % "\n".join(
                         "<li><code><b>%4d</b>    </code> \
                         <code><i>%s</i></code> : %s</li>" %
-                        (pep8.options.counters[key], key,
+                        (pep8.options.counters[key], cgi.escape(key),
                             cgi.escape(pep8.options.messages[key]))
                         for key in sorted(pep8.options.messages))
         else:
