@@ -155,9 +155,12 @@ class FormatTxmtPep8(object):
                 onchange="view(this);" checked="checked" /><label
              for="view_pep" title="view PEP"> view PEP</label>
             <br />
-            <input type="text" id="filter_codes" value="" size="28"
-                placeholder="comma separated list of error code to hide"
-                title="comma separated list of error code to hide" />
+            <label for="filter_codes"
+                title="list of error code to hide">hide :</label>
+            <input type="text" id="filter_codes" value="" size="22"
+                placeholder="list of error code"
+                title="list of error code to hide"
+                onkeyup="update_list();"/>
         </p>
         <h2>File : ${txmt_filename}</h2>
             <ul>
