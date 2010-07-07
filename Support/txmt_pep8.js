@@ -28,6 +28,21 @@ function save_cookie(id) {
   document.cookie = cookie + 'expires=' + d.toGMTString();
 }
 
+function save_filter_codes() {
+  var cookie = "filter_codes=";
+  cookie += escape(document.getElementById("filter_codes").value);
+  cookie += ";";
+  var d = new Date();
+  d.setTime(d.getTime() + 1e10);
+  console.log(cookie);
+  document.cookie = cookie + 'expires=' + d.toGMTString();
+}
+
+function update_list() {
+    save_filter_codes();
+    write_style_for_filter_codes();
+}
+
 function view(el) {
   toggle(el.id, el.checked);
   save_cookie('view_source');
@@ -44,6 +59,12 @@ function read_cookie(name) {
   }
 }
 
+function load_filter_codes() {
+  var cookie = document.cookie;
+  var reg = /filter_codes=([^;]*);/;
+  document.getElementById("filter_codes").value = unescape(reg.exec(cookie)[1]);
+}
+
 function load_from_cookie(name) {
   var view_source = read_cookie(name);
   toggle(name, view_source);
@@ -55,6 +76,8 @@ window.onload = function () {
   load_from_cookie('view_pep');
   save_cookie('view_source');
   save_cookie('view_pep');
+  load_filter_codes();
+  write_style_for_filter_codes();
 };
 
 function write_style_for(name) {
@@ -64,6 +87,24 @@ function write_style_for(name) {
   } else {
     document.write("none;}");
   }
+}
+
+function write_style_for_filter_codes() {
+  var style = document.getElementById("filter_codes_style");
+  if (!style) {
+    var head = document.getElementsByTagName("head")[0];
+    console.log(head)
+    style = document.createElement("style");
+    style.id = "filter_codes_style";
+    head.appendChild(style);
+  }
+  var rules = "";
+  document.getElementById("filter_codes").value.split(/(\s|,)+/).forEach(function (klass) {
+    rules += "." + klass + " {\n\
+  display:none;\n\
+}\n";
+  });
+  style.innerHTML = rules;
 }
 
 // add styles to hide/show block before adding them
