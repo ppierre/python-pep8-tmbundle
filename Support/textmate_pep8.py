@@ -164,7 +164,7 @@ class FormatTxmtPep8(object):
         })
 
     error_tpl = string.Template('''
-            <li>
+            <li class="${txt_code}">
                 <code><a href="txmt://open/?url=file://${url_file}\
 &line=${lig}&column=${col}">${position}</a></code>
                    <code><i>${txt_code}</i></code> : ${txt_msg}
@@ -174,7 +174,7 @@ class FormatTxmtPep8(object):
                 </blockquote>
             </li>
         ''')
-
+ 
     footer_tpl = string.Template('''
             </ul>
             <p>&nbsp;</p>
