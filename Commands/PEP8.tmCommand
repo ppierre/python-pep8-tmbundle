@@ -12,24 +12,32 @@ import os
 import sys
 
 
-tm_bundle_path = os.environ['TM_BUNDLE_PATH']
+tm_bundle_path = os.environ['TM_BUNDLE_SUPPORT']
 sys.path.append(tm_bundle_path)
 
-from Support import textmate_pep8
+import textmate_pep8
 
 
 textmate_pep8.main()</string>
 	<key>input</key>
 	<string>document</string>
+	<key>inputFormat</key>
+	<string>text</string>
 	<key>keyEquivalent</key>
 	<string>^@V</string>
 	<key>name</key>
 	<string>PEP8</string>
-	<key>output</key>
-	<string>showAsHTML</string>
+	<key>outputCaret</key>
+	<string>afterOutput</string>
+	<key>outputFormat</key>
+	<string>html</string>
+	<key>outputLocation</key>
+	<string>newWindow</string>
 	<key>scope</key>
 	<string>source.python</string>
 	<key>uuid</key>
 	<string>401FD547-88C0-4C02-934E-48EFB6D7FDE7</string>
+	<key>version</key>
+	<integer>2</integer>
 </dict>
 </plist>
