@@ -27,6 +27,8 @@ textmate_pep8.main()</string>
 	<string>^@V</string>
 	<key>name</key>
 	<string>PEP8</string>
+	<key>output</key>
+	<string>showAsHTML</string>
 	<key>outputCaret</key>
 	<string>afterOutput</string>
 	<key>outputFormat</key>
